@@ -1,6 +1,7 @@
 import { getAuthSession } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+export const API_ORIGIN = API_BASE.replace(/\/api\/?$/, "");
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT";
@@ -311,6 +312,28 @@ export const updateStaffVacancy = (id: number, payload: VacancyPayload) =>
 
 export const getStaffApplications = () =>
   apiRequest<ApplicationRecord[]>("/staff/applications", { requiresAuth: true });
+
+export const getStaffApplicationReport = (applicationId: number) =>
+  apiRequest<{
+    application: ApplicationRecord;
+    mcq_questions: Array<Record<string, unknown>>;
+    override_history: Array<{
+      id: number;
+      previous_status: string | null;
+      new_status: string;
+      override_category?: string;
+      override_note: string;
+      created_at: string;
+      admin_name: string;
+      admin_email: string;
+    }>;
+  }>(
+    `/staff/applications/${applicationId}/report`,
+    { requiresAuth: true },
+  );
+
+export const getStaffApplicationReportPdfUrl = (applicationId: number) =>
+  `${API_BASE}/staff/applications/${applicationId}/report.pdf?token=${encodeURIComponent(getAuthSession()?.token || "")}`;
 
 // Compatibility exports retained for cloned components outside active routes.
 export const loginCompany = loginStaff;
